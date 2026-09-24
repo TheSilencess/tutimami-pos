@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -194,6 +195,29 @@ export class UsersController {
       action: 'UPDATE',
       entity: 'User',
       entityId: id,
+    });
+
+    return user;
+  }
+
+  @Delete(':id')
+  @Permission('users.delete')
+  async remove(@Param('id') id: string, @CurrentUser() u: any) {
+    if (id === u.id) {
+      throw new BadRequestException('No puedes eliminar tu propio usuario.');
+    }
+
+    const user = await this.p.user.update({
+      where: { id },
+      data: { active: false },
+    });
+
+    await this.audit.log({
+      userId: u.id,
+      action: 'DELETE',
+      entity: 'User',
+      entityId: id,
+      newValues: { active: false },
     });
 
     return user;

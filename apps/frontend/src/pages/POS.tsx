@@ -9,6 +9,7 @@ import {
   Banknote,
   CheckCircle2,
   UserPlus,
+  Printer,
 } from 'lucide-react';
 import { api, errorMessage } from '../lib/api';
 import { Category, Customer, Product } from '../types';
@@ -50,6 +51,8 @@ export default function POS() {
   const [method, setMethod] = useState('CASH');
   const [pay, setPay] = useState('');
   const [success, setSuccess] = useState(false);
+  const [completedSaleId, setCompletedSaleId] = useState<string | null>(null);
+  const [printing, setPrinting] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadCustomers = async () => {
@@ -151,7 +154,7 @@ export default function POS() {
     }
 
     try {
-      await api.post('/sales', {
+      const response = await api.post('/sales', {
         customerId: customer,
         items: cart.map((i) => ({
           productId: i.product.id,
@@ -162,6 +165,7 @@ export default function POS() {
         payment: { method, amount: payAmount },
       });
 
+      setCompletedSaleId(response.data.id);
       setCart([]);
       setCheckout(false);
       setPay('');
@@ -385,7 +389,58 @@ export default function POS() {
           <CheckCircle2 size={52} />
           <h3>¡Venta registrada!</h3>
           <p>La operación se guardó correctamente en el sistema.</p>
-          <Button onClick={() => setSuccess(false)}>Nueva venta</Button>
+          <div className="modal-actions" style={{ borderTop: 0, marginTop: 8 }}>
+            <Button
+              variant="secondary"
+              onClick={() => setSuccess(false)}
+            >
+              Nueva venta
+            </Button>
+            <Button
+              loading={printing}
+              disabled={!completedSaleId}
+              onClick={async () => {
+                if (!completedSaleId) return;
+                setPrinting(true);
+                const printWindow = window.open('', '_blank', 'width=430,height=820');
+                if (!printWindow) {
+                  alert('El navegador bloqueó la ventana de impresión. Permite las ventanas emergentes para TutiMami POS.');
+                  setPrinting(false);
+                  return;
+                }
+                printWindow.document.write('<html><body style="font-family:Arial,sans-serif;padding:24px">Preparando recibo...</body></html>');
+                printWindow.document.close();
+                try {
+                  const response = await api.post(`/printing/sales/${completedSaleId}`, {});
+                  const payload = response.data.payload;
+                  const esc = (value: unknown) => String(value ?? '').replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as Record<string, string>)[char]);
+                  const moneyValue = (value: number) => `Q ${Number(value || 0).toFixed(2)}`;
+                  const payment = payload.payments?.[0];
+                  const paymentNames: Record<string, string> = { CASH: 'Efectivo', CARD: 'Tarjeta', TRANSFER: 'Transferencia' };
+                  const itemsHtml = payload.items.map((item: any) => `
+                    <tr>
+                      <td style="padding:8px 0;vertical-align:top">${esc(item.name)}<div style="font-size:10px;color:#777;margin-top:2px">${item.qty} x ${moneyValue(item.unitPrice)}</div></td>
+                      <td style="padding:8px 0;text-align:right;vertical-align:top;font-weight:700">${moneyValue(item.total)}</td>
+                    </tr>`).join('');
+                  const change = payment?.method === 'CASH' ? Math.max(0, Number(payment.amount) - Number(payload.total)) : 0;
+                  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Recibo ${esc(payload.saleId)}</title><style>
+                    @page{size:80mm auto;margin:4mm}*{box-sizing:border-box}body{margin:0;background:#fff;color:#171716;font-family:Arial,Helvetica,sans-serif;font-size:11px}.receipt{width:72mm;margin:0 auto}.brand{font-size:23px;font-weight:900;letter-spacing:-1px;text-align:center}.sub{text-align:center;color:#777;font-size:9px;line-height:1.5}.line{border-top:1px dashed #aaa;margin:10px 0}.meta{font-size:10px;line-height:1.55}.meta strong{font-weight:700}.items{width:100%;border-collapse:collapse;margin-top:5px}.items th{font-size:8px;text-transform:uppercase;color:#777;text-align:left;padding-bottom:4px;border-bottom:1px solid #222}.items th:last-child{text-align:right}.totals{margin-top:9px;border-top:1px solid #222;padding-top:7px}.totals div{display:flex;justify-content:space-between;margin:4px 0}.total{font-size:15px;font-weight:900;margin-top:7px!important;padding-top:7px;border-top:1px double #222}.payment{margin-top:10px;padding:8px;background:#f4f4f2;border-radius:5px}.footer{text-align:center;margin-top:14px;color:#777;font-size:9px;line-height:1.5}.thanks{text-align:center;font-weight:800;margin-top:12px;font-size:11px}@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body><main class="receipt"><div class="brand">TutiMami</div><div class="sub">Comprobante de venta<br>${esc(new Date(payload.createdAt).toLocaleString('es-GT'))}</div><div class="line"></div><div class="meta"><strong>Venta:</strong> ${esc(payload.saleId)}<br><strong>Cajero:</strong> ${esc(payload.cashierName)}<br><strong>Cliente:</strong> ${esc(payload.customer.name)}<br><strong>NIT:</strong> ${esc(payload.customer.nit || 'N/A')}<br><strong>Teléfono:</strong> ${esc(payload.customer.phone || 'N/A')}</div><table class="items"><thead><tr><th>Producto</th><th>Total</th></tr></thead><tbody>${itemsHtml}</tbody></table><div class="totals"><div><span>Subtotal</span><b>${moneyValue(payload.subtotal)}</b></div><div><span>Descuento</span><b>${moneyValue(payload.discount)}</b></div><div><span>IVA (12%)</span><b>${moneyValue(payload.tax)}</b></div><div class="total"><span>TOTAL</span><span>${moneyValue(payload.total)}</span></div></div><div class="payment"><div><strong>Método:</strong> ${esc(paymentNames[payment?.method] || payment?.method || 'N/A')}</div><div><strong>Recibido:</strong> ${moneyValue(payment?.amount || payload.total)}</div>${payment?.method === 'CASH' ? `<div><strong>Cambio:</strong> ${moneyValue(change)}</div>` : ''}${payment?.reference ? `<div><strong>Referencia:</strong> ${esc(payment.reference)}</div>` : ''}</div><div class="thanks">¡Gracias por tu compra!</div><div class="footer">Conserva este comprobante para cualquier consulta.<br>TutiMami POS</div></main><script>window.onload=()=>{window.focus();setTimeout(()=>window.print(),180)}</script></body></html>`;
+                  printWindow.document.open();
+                  printWindow.document.write(html);
+                  printWindow.document.close();
+                } catch (error) {
+                  printWindow.close();
+                  alert(errorMessage(error));
+                } finally {
+                  setPrinting(false);
+                }
+              }}
+            >
+              <Printer size={16} />
+              Imprimir / PDF
+            </Button>
+          </div>
+          <p style={{ textAlign: 'center', fontSize: 10, color: 'var(--muted)', margin: '4px 20px 18px' }}>Desde la ventana de impresión puedes elegir <strong>Guardar como PDF</strong>.</p>
         </div>
       </Modal>
     </div>

@@ -50,6 +50,7 @@ const cashierAllowed = [
   'customers.create',
   'sales.create',
   'payments.create',
+  'receipts.print',
   'reports.view',
 ];
 
