@@ -1,0 +1,1 @@
+import {SetMetadata,createParamDecorator,ExecutionContext} from '@nestjs/common'; export const PERMISSION_KEY='permission'; export const Permission=(key:string)=>SetMetadata(PERMISSION_KEY,key); export const CurrentUser=createParamDecorator((_d,ctx:ExecutionContext)=>ctx.switchToHttp().getRequest().user);

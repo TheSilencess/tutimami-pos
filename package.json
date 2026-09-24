@@ -1,0 +1,1 @@
+{"name":"tutimami-pos","private":true,"workspaces":["apps/backend","apps/frontend"],"scripts":{"install:all":"npm install --workspaces","dev:backend":"npm --workspace apps/backend run dev","dev:frontend":"npm --workspace apps/frontend run dev","build":"npm run build --workspaces"}}

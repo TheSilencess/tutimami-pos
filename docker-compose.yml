@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: tutimami-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: tutimami
+    ports:
+      - "5432:5432"
+    volumes:
+      - tutimami_postgres_data:/var/lib/postgresql/data
+volumes:
+  tutimami_postgres_data:

@@ -1,0 +1,1 @@
+import {Module}from'@nestjs/common';import {InventoryController}from'./inventory';import {AuditService}from'../common/audit.service';@Module({controllers:[InventoryController],providers:[AuditService]})export class InventoryModule{}
