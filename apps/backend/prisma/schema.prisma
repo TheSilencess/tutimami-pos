@@ -1,24 +1,236 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
 
-enum CustomerType { CF NIT }
-enum SaleStatus { DRAFT PENDING_PAYMENT PAID FEL_PENDING FEL_CERTIFIED FEL_REJECTED CANCELLED }
-enum PaymentMethod { CASH CARD TRANSFER }
-enum InventoryMovementType { SALE PURCHASE ADJUSTMENT RETURN INITIAL_STOCK }
-enum PrintStatus { QUEUED PRINTED FAILED }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
-model User { id String @id @default(cuid()) name String email String @unique passwordHash String active Boolean @default(true) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt roles UserRole[] sales Sale[] auditLogs AuditLog[] inventoryMovements InventoryMovement[] refreshTokens RefreshToken[] }
-model Role { id String @id @default(cuid()) name String @unique description String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt users UserRole[] permissions RolePermission[] }
-model Permission { id String @id @default(cuid()) key String @unique description String permissions RolePermission[] }
-model UserRole { userId String roleId String user User @relation(fields:[userId],references:[id],onDelete:Cascade) role Role @relation(fields:[roleId],references:[id],onDelete:Cascade) @@id([userId,roleId]) }
-model RolePermission { roleId String permissionId String role Role @relation(fields:[roleId],references:[id],onDelete:Cascade) permission Permission @relation(fields:[permissionId],references:[id],onDelete:Cascade) @@id([roleId,permissionId]) }
-model RefreshToken { id String @id @default(cuid()) userId String tokenHash String @unique expiresAt DateTime revokedAt DateTime? createdAt DateTime @default(now()) user User @relation(fields:[userId],references:[id],onDelete:Cascade) }
-model Category { id String @id @default(cuid()) name String @unique description String? active Boolean @default(true) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt products Product[] }
-model Product { id String @id @default(cuid()) sku String @unique barcode String? @unique name String description String? salePrice Decimal @db.Decimal(12,2) cost Decimal @db.Decimal(12,2) stock Int @default(0) minStock Int @default(0) imageUrl String? active Boolean @default(true) categoryId String category Category @relation(fields:[categoryId],references:[id]) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt saleItems SaleItem[] inventoryMovements InventoryMovement[] }
-model Customer { id String @id @default(cuid()) customerType CustomerType name String nit String? @unique phone String? email String? address String? active Boolean @default(true) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt sales Sale[] }
-model Sale { id String @id @default(cuid()) customerId String userId String subtotal Decimal @db.Decimal(12,2) discount Decimal @db.Decimal(12,2) tax Decimal @db.Decimal(12,2) total Decimal @db.Decimal(12,2) status SaleStatus @default(PAID) felUuid String? felSeries String? felNumber String? felCertifiedAt DateTime? felError String? demoKey String? @unique createdAt DateTime @default(now()) updatedAt DateTime @updatedAt customer Customer @relation(fields:[customerId],references:[id]) user User @relation(fields:[userId],references:[id]) items SaleItem[] payments Payment[] auditLogs AuditLog[] printJobs PrintJob[] }
-model SaleItem { id String @id @default(cuid()) saleId String productId String productName String quantity Int unitPrice Decimal @db.Decimal(12,2) discount Decimal @db.Decimal(12,2) tax Decimal @db.Decimal(12,2) total Decimal @db.Decimal(12,2) sale Sale @relation(fields:[saleId],references:[id],onDelete:Cascade) product Product @relation(fields:[productId],references:[id]) }
-model Payment { id String @id @default(cuid()) saleId String method PaymentMethod amount Decimal @db.Decimal(12,2) reference String? createdAt DateTime @default(now()) sale Sale @relation(fields:[saleId],references:[id],onDelete:Cascade) }
-model InventoryMovement { id String @id @default(cuid()) productId String userId String type InventoryMovementType quantity Int previousStock Int newStock Int reason String? createdAt DateTime @default(now()) product Product @relation(fields:[productId],references:[id]) user User @relation(fields:[userId],references:[id]) }
-model PrintJob { id String @id @default(cuid()) saleId String printerName String? status PrintStatus @default(QUEUED) payload Json printedAt DateTime? createdAt DateTime @default(now()) sale Sale @relation(fields:[saleId],references:[id],onDelete:Cascade) }
-model AuditLog { id String @id @default(cuid()) userId String? action String entity String entityId String? oldValues Json? newValues Json? ipAddress String? createdAt DateTime @default(now()) saleId String? user User? @relation(fields:[userId],references:[id],onDelete:SetNull) sale Sale? @relation(fields:[saleId],references:[id],onDelete:SetNull) }
+enum CustomerType {
+  CF
+  NIT
+}
+
+enum SaleStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PAID
+  FEL_PENDING
+  FEL_CERTIFIED
+  FEL_REJECTED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+enum InventoryMovementType {
+  SALE
+  PURCHASE
+  ADJUSTMENT
+  RETURN
+  INITIAL_STOCK
+}
+
+enum PrintStatus {
+  QUEUED
+  PRINTED
+  FAILED
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  name                String
+  email               String               @unique
+  passwordHash        String
+  active              Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  roles               UserRole[]
+  sales               Sale[]
+  auditLogs           AuditLog[]
+  inventoryMovements  InventoryMovement[]
+  refreshTokens       RefreshToken[]
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  description String?
+  permissions RolePermission[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id                 String               @id @default(cuid())
+  sku                String               @unique
+  barcode            String?              @unique
+  name               String
+  description        String?
+  salePrice          Decimal              @db.Decimal(12, 2)
+  cost               Decimal              @db.Decimal(12, 2)
+  stock              Int                  @default(0)
+  minStock           Int                  @default(0)
+  imageUrl           String?
+  active             Boolean              @default(true)
+  categoryId         String
+  category           Category             @relation(fields: [categoryId], references: [id])
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  saleItems          SaleItem[]
+  inventoryMovements InventoryMovement[]
+}
+
+model Customer {
+  id           String       @id @default(cuid())
+  customerType CustomerType
+  name         String
+  nit          String?
+  phone        String?
+  email        String?
+  address      String?
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  sales        Sale[]
+}
+
+model Sale {
+  id             String         @id @default(cuid())
+  customerId     String
+  userId         String
+  subtotal       Decimal        @db.Decimal(12, 2)
+  discount       Decimal        @db.Decimal(12, 2)
+  tax            Decimal        @db.Decimal(12, 2)
+  total          Decimal        @db.Decimal(12, 2)
+  status         SaleStatus     @default(PAID)
+  felUuid        String?
+  felSeries      String?
+  felNumber      String?
+  felCertifiedAt DateTime?
+  felError       String?
+  demoKey        String?        @unique
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  customer       Customer       @relation(fields: [customerId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
+  items          SaleItem[]
+  payments       Payment[]
+  auditLogs      AuditLog[]
+  printJobs      PrintJob[]
+}
+
+model SaleItem {
+  id          String  @id @default(cuid())
+  saleId      String
+  productId   String
+  productName String
+  quantity    Int
+  unitPrice   Decimal @db.Decimal(12, 2)
+  discount    Decimal @db.Decimal(12, 2)
+  tax         Decimal @db.Decimal(12, 2)
+  total       Decimal @db.Decimal(12, 2)
+  sale        Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  saleId    String
+  method    PaymentMethod
+  amount    Decimal       @db.Decimal(12, 2)
+  reference String?
+  createdAt DateTime      @default(now())
+  sale      Sale          @relation(fields: [saleId], references: [id], onDelete: Cascade)
+}
+
+model InventoryMovement {
+  id           String                @id @default(cuid())
+  productId    String
+  userId       String
+  type         InventoryMovementType
+  quantity     Int
+  previousStock Int
+  newStock     Int
+  reason       String?
+  createdAt    DateTime              @default(now())
+  product      Product               @relation(fields: [productId], references: [id])
+  user         User                  @relation(fields: [userId], references: [id])
+}
+
+model PrintJob {
+  id          String     @id @default(cuid())
+  saleId      String
+  printerName String?
+  status      PrintStatus @default(QUEUED)
+  payload     Json
+  printedAt   DateTime?
+  createdAt   DateTime   @default(now())
+  sale        Sale       @relation(fields: [saleId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String    @id @default(cuid())
+  userId     String?
+  action     String
+  entity     String
+  entityId   String?
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  createdAt  DateTime  @default(now())
+  saleId     String?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sale       Sale?     @relation(fields: [saleId], references: [id], onDelete: SetNull)
+}

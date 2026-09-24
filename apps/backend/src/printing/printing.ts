@@ -75,6 +75,71 @@ export class PrintingController {
     });
   }
 
+  @Post('jobs/:jobId/reprint')
+  @Permission('receipts.reprint')
+  async reprint(
+    @Param('jobId') jobId: string,
+    @Body() d: PrintDto,
+    @CurrentUser() u: any,
+  ) {
+    const job = await this.p.printJob.findUnique({
+      where: { id: jobId },
+      include: {
+        sale: {
+          include: {
+            items: true,
+            customer: true,
+            payments: true,
+            user: { select: { name: true } },
+          },
+        },
+      },
+    });
+
+    if (!job) throw new NotFoundException('Trabajo de impresión no encontrado');
+
+    const sale = job.sale;
+    const payload = {
+      saleId: sale.id,
+      createdAt: sale.createdAt,
+      printedBy: u.id,
+      cashierName: sale.user.name,
+      customer: {
+        name: sale.customer.name,
+        nit: sale.customer.nit || 'N/A',
+        phone: sale.customer.phone || 'N/A',
+        email: sale.customer.email || 'N/A',
+        address: sale.customer.address || 'N/A',
+      },
+      subtotal: Number(sale.subtotal),
+      discount: Number(sale.discount),
+      tax: Number(sale.tax),
+      total: Number(sale.total),
+      payments: sale.payments.map((payment) => ({
+        method: payment.method,
+        amount: Number(payment.amount),
+        reference: payment.reference || '',
+      })),
+      items: sale.items.map((item) => ({
+        name: item.productName,
+        qty: item.quantity,
+        unitPrice: Number(item.unitPrice),
+        discount: Number(item.discount),
+        tax: Number(item.tax),
+        total: Number(item.total),
+      })),
+    };
+
+    return this.p.printJob.create({
+      data: {
+        saleId: sale.id,
+        printerName: d.printerName || job.printerName,
+        status: 'QUEUED',
+        payload,
+      },
+    });
+  }
+
   @Get('jobs')
   @Permission('receipts.reprint')
   jobs() {

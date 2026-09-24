@@ -120,10 +120,10 @@ export default function POS() {
       const response = await api.post('/customers', {
         customerType: customerForm.customerType,
         name: customerForm.name.trim(),
-        nit: customerForm.customerType === 'NIT' ? customerForm.nit.trim() : undefined,
-        phone: customerForm.phone.trim() || undefined,
-        email: customerForm.email.trim() || undefined,
-        address: customerForm.address.trim() || undefined,
+        nit: customerForm.customerType === 'NIT' ? customerForm.nit.trim() : 'N/A',
+        phone: customerForm.phone.trim() || 'N/A',
+        email: customerForm.email.trim() || 'N/A',
+        address: customerForm.address.trim() || 'N/A',
       });
 
       const created = response.data as Customer;
