@@ -24,6 +24,8 @@ npm --workspace apps/backend run build
 npm --workspace apps/backend run start
 ```
 
+En Hostinger Business con raíz `/`, usa `npm run build` como build, `apps/backend/dist` como output y `apps/backend/dist/src/main.js` como entry file.
+
 Configura HTTPS público (por ejemplo `https://api.tudominio.com`). El servicio debe mantener el proceso Node activo y entregar `PORT` a la app. Variables en el servidor:
 
 ```env
