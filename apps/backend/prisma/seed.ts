@@ -65,6 +65,9 @@ async function clearDemoData() {
 }
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('El seed borra todos los datos. No se permite ejecutarlo en producción.');
+  }
   await clearDemoData();
 
   const passwordHash = await bcrypt.hash(adminPassword, 12);
