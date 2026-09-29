@@ -348,3 +348,143 @@ html.dark .sale-summary > div {
 html.dark .modal-actions {
   border-top-color: #34332f;
 }
+
+/* POS: carrito con acciones siempre visibles */
+@media (min-width: 901px){
+  .cart-panel{position:sticky;top:16px;height:calc(100vh - 32px);max-height:820px;min-height:560px;align-self:start;overflow:hidden}
+  .cart-head{flex:0 0 auto;background:#fff;z-index:2}
+  .cart-items{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  .cart-footer{flex:0 0 auto;background:#fff;z-index:2;box-shadow:0 -8px 18px rgba(35,31,26,.04)}
+}
+
+/* POS: pagos múltiples */
+.split-payments{margin:16px 20px 0;display:grid;gap:10px}.split-payment-row{border:1px solid var(--line);border-radius:11px;padding:12px;background:#faf9f7}.split-payment-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}.split-payment-head strong{font-size:11px}.split-payment-head button{border:0;background:none;color:var(--red);font-size:9px;display:flex;align-items:center;gap:4px}.payment-methods.compact{margin:0}.payment-methods.compact button{padding:8px 4px}.split-payment-row .field{margin:10px 0 0}.split-payment-row .field>span{margin-bottom:5px}.add-payment-btn{height:38px;border:1px dashed #bba98f;background:#fff;border-radius:9px;color:#745f45;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px}.add-payment-btn:disabled{opacity:.45}.payment-balance{margin:13px 20px 0;padding:12px 14px;background:#f5f2ed;border-radius:10px}.payment-balance>div{display:flex;justify-content:space-between;font-size:11px;padding:3px 0}.payment-balance .pending{color:var(--red)}.payment-balance .change{color:var(--green)}
+.cart-footer-top{border-top:0;border-bottom:1px solid var(--line);box-shadow:0 8px 18px rgba(35,31,26,.04)}
+
+/* Pago dividido / múltiple */
+.split-payments-title{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:0 1px}.split-payments-title strong{font-size:12px}.split-payments-title span{font-size:9px;color:#8e8982;text-align:right}.split-payment-row{position:relative}.add-payment-btn{cursor:pointer}.add-payment-btn:not(:disabled):hover{background:#f8f4ee;border-color:#a88c68}.payment-balance{border:1px solid var(--line)}
+html.dark .split-payments-title span{color:#9c978e}
+@media(max-width:620px){.split-payments-title{align-items:flex-start;flex-direction:column;gap:3px}.split-payments-title span{text-align:left}}
+
+/* Dark mode: split / multiple payments */
+html.dark .split-payment-row {
+  background: #252421;
+  border-color: var(--line);
+  color: var(--ink);
+}
+html.dark .split-payment-head strong { color: var(--ink); }
+html.dark .payment-methods.compact button {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--muted);
+}
+html.dark .payment-methods.compact button:hover {
+  background: #2a2926;
+  color: var(--ink);
+}
+html.dark .payment-methods.compact button.selected {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: #e0c49e;
+}
+html.dark .add-payment-btn {
+  background: var(--paper);
+  border-color: #655844;
+  color: #d3b68e;
+}
+html.dark .add-payment-btn:not(:disabled):hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: #ead1ad;
+}
+html.dark .payment-balance {
+  background: #252421;
+  border-color: var(--line);
+  color: var(--ink);
+}
+html.dark .payment-balance > div:not(.pending):not(.change) span {
+  color: var(--muted);
+}
+html.dark .split-amount .input-wrap .prefix { color: var(--muted); }
+html.dark .split-reference input,
+html.dark .split-amount input {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--line);
+}
+html.dark .split-reference input::placeholder,
+html.dark .split-amount input::placeholder { color: #77736c; }
+
+/* Dark mode: POS cart — keep the entire sticky checkout panel dark.
+   These rules intentionally come after the desktop sticky-cart rules. */
+html.dark .cart-panel,
+html.dark .cart-head,
+html.dark .cart-footer,
+html.dark .cart-footer-top,
+html.dark .cart-items {
+  background: var(--paper);
+  color: var(--ink);
+}
+html.dark .cart-head,
+html.dark .cart-footer-top {
+  border-color: var(--line);
+}
+html.dark .cart-footer,
+html.dark .cart-footer-top {
+  box-shadow: 0 -8px 18px rgba(0,0,0,.12);
+}
+html.dark .cart-footer-top {
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+}
+html.dark .cart-head h3,
+html.dark .cart-total strong,
+html.dark .cart-item-main strong {
+  color: var(--ink);
+}
+html.dark .checkout-btn {
+  background: #f1ede6;
+  color: #171716;
+  border-color: #f1ede6;
+}
+html.dark .checkout-btn:hover:not(:disabled) {
+  background: #e5dfd5;
+}
+html.dark .checkout-btn:disabled {
+  background: #302f2b;
+  color: #77736c;
+  border-color: #34332f;
+}
+
+/* FINAL FIX: POS cart summary/header dark mode.
+   Keep this block last so desktop sticky-cart light backgrounds cannot override it. */
+html.dark .cart-panel > .cart-head,
+html.dark .cart-panel > .cart-footer,
+html.dark .cart-panel > .cart-footer.cart-footer-top {
+  background: #1d1d1b !important;
+  color: #f5f3ef !important;
+  border-color: #34332f !important;
+}
+html.dark .cart-panel > .cart-head h3,
+html.dark .cart-panel > .cart-footer b,
+html.dark .cart-panel > .cart-footer strong,
+html.dark .cart-panel > .cart-footer .cart-total strong {
+  color: #f5f3ef !important;
+}
+html.dark .cart-panel > .cart-head span,
+html.dark .cart-panel > .cart-footer span,
+html.dark .cart-panel > .cart-footer .cart-total span {
+  color: #a7a39b !important;
+}
+html.dark .cart-panel > .cart-footer .cart-total {
+  border-color: #4a4842 !important;
+}
+html.dark .cart-panel > .cart-footer .checkout-btn {
+  background: #f1ede6 !important;
+  color: #171716 !important;
+  border-color: #f1ede6 !important;
+}
+html.dark .cart-panel > .cart-footer .checkout-btn:disabled {
+  background: #302f2b !important;
+  color: #77736c !important;
+  border-color: #34332f !important;
+}
