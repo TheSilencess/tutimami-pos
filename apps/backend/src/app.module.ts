@@ -1,3 +1,4 @@
+import {CashModule} from './cash/cash.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
@@ -27,6 +28,7 @@ import { AuditModule } from './audit/audit.module';
       },
     }),
     PrismaModule,
+    CashModule,
     AuthModule,
     ProductsModule,
     CategoriesModule,

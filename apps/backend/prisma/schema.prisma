@@ -51,6 +51,7 @@ model User {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   roles               UserRole[]
+  cashSessions        CashSession[]
   sales               Sale[]
   auditLogs           AuditLog[]
   inventoryMovements  InventoryMovement[]
@@ -147,6 +148,8 @@ model Customer {
 }
 
 model Sale {
+  cashSessionId String?
+  cashSession CashSession? @relation(fields: [cashSessionId], references: [id])
   id             String         @id @default(cuid())
   customerId     String
   userId         String
@@ -233,4 +236,23 @@ model AuditLog {
   saleId     String?
   user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   sale       Sale?     @relation(fields: [saleId], references: [id], onDelete: SetNull)
+}
+
+model CashSession {
+  id String @id @default(cuid())
+  userId String
+  registerName String
+  openedAt DateTime @default(now())
+  closedAt DateTime?
+  openingCash Decimal @db.Decimal(12,2)
+  cashSales Decimal? @db.Decimal(12,2)
+  cardSales Decimal? @db.Decimal(12,2)
+  transferSales Decimal? @db.Decimal(12,2)
+  expectedCash Decimal? @db.Decimal(12,2)
+  countedCash Decimal? @db.Decimal(12,2)
+  difference Decimal? @db.Decimal(12,2)
+  notes String?
+  user User @relation(fields: [userId], references: [id])
+  sales Sale[]
+  @@index([openedAt])
 }

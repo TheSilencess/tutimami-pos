@@ -5,6 +5,7 @@ import { User } from './types';
 import { AppShell } from './components/layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Cash from './pages/Cash';
 import POS from './pages/POS';
 import Products from './pages/Products';
 import Customers from './pages/Customers';
@@ -93,7 +94,7 @@ export default function App() {
   useEffect(() => {
     if (!user || location.pathname !== '/login') return;
 
-    const destination = isAdmin(user) ? '/dashboard' : '/sales/new';
+    const destination = isAdmin(user) ? '/dashboard' : '/cash';
     navigate(destination, { replace: true });
   }, [user, location.pathname, navigate]);
 
@@ -135,6 +136,7 @@ export default function App() {
           )
         }
       >
+        <Route path="/cash" element={<PermissionRoute user={user!} permission="sales.create"><Cash /></PermissionRoute>} />
         <Route
           path="/dashboard"
           element={

@@ -1,0 +1,14 @@
+const {strict:assert}=require('node:assert');
+const {paymentTotals,periodRange}=require('../apps/backend/dist/src/common/cash-math');
+const {reportPdf}=require('../apps/backend/dist/src/common/report-pdf');
+assert.deepEqual(paymentTotals([{status:'PAID',total:100,payments:[{method:'CASH',amount:100},{method:'CARD',amount:30},{method:'TRANSFER',amount:20}]}]),{CASH:50,CARD:30,TRANSFER:20,total:100,count:1});
+assert.equal(paymentTotals([{status:'CANCELLED',total:50,payments:[{method:'CASH',amount:50}]}]).total,0);
+assert.equal(paymentTotals([{status:'PAID',total:.3,payments:[{method:'CASH',amount:.1},{method:'CASH',amount:.2}]}]).CASH,.3);
+assert.equal(periodRange('day','2026-10-02').gte.toISOString(),'2026-10-02T06:00:00.000Z');
+assert.equal(periodRange('week','2026-10-04').gte.toISOString(),'2026-09-28T06:00:00.000Z');
+assert.equal(periodRange('week','2026-10-04').lt.toISOString(),'2026-10-05T06:00:00.000Z');
+assert.equal(periodRange('month','2026-12-31').lt.toISOString(),'2027-01-01T06:00:00.000Z');
+assert.throws(()=>periodRange('day','2026-02-30'));
+assert.throws(()=>periodRange('year','2026-10-02'));
+require('node:fs').writeFileSync('/tmp/cash-report-test.pdf',reportPdf(['TutiMami - Reporte de cajas','Día: 2026-10-02','CAJA 1 - Cajera de prueba','Fondo inicial: Q 200.00','Efectivo: Q 50.00 / Tarjeta: Q 30.00','Transferencia: Q 20.00','Efectivo esperado: Q 250.00','Efectivo contado: Q 245.00','Diferencia: Q -5.00',...Array.from({length:80},(_,i)=>`Venta ${i+1} - Total Q 100.00`)]));
+console.log('Cálculos, fechas y PDF: OK');

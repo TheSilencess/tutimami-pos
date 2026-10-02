@@ -455,36 +455,5 @@ html.dark .checkout-btn:disabled {
   border-color: #34332f;
 }
 
-/* FINAL FIX: POS cart summary/header dark mode.
-   Keep this block last so desktop sticky-cart light backgrounds cannot override it. */
-html.dark .cart-panel > .cart-head,
-html.dark .cart-panel > .cart-footer,
-html.dark .cart-panel > .cart-footer.cart-footer-top {
-  background: #1d1d1b !important;
-  color: #f5f3ef !important;
-  border-color: #34332f !important;
-}
-html.dark .cart-panel > .cart-head h3,
-html.dark .cart-panel > .cart-footer b,
-html.dark .cart-panel > .cart-footer strong,
-html.dark .cart-panel > .cart-footer .cart-total strong {
-  color: #f5f3ef !important;
-}
-html.dark .cart-panel > .cart-head span,
-html.dark .cart-panel > .cart-footer span,
-html.dark .cart-panel > .cart-footer .cart-total span {
-  color: #a7a39b !important;
-}
-html.dark .cart-panel > .cart-footer .cart-total {
-  border-color: #4a4842 !important;
-}
-html.dark .cart-panel > .cart-footer .checkout-btn {
-  background: #f1ede6 !important;
-  color: #171716 !important;
-  border-color: #f1ede6 !important;
-}
-html.dark .cart-panel > .cart-footer .checkout-btn:disabled {
-  background: #302f2b !important;
-  color: #77736c !important;
-  border-color: #34332f !important;
-}
+/* Reportes */
+.report-filters{display:flex;align-items:center;gap:14px;padding:16px 20px;background:var(--paper);border:1px solid var(--line);border-radius:16px;margin-bottom:24px;flex-wrap:wrap}.report-filters>div{display:flex;gap:10px;align-items:center;margin-right:auto}.report-filters>span{font-size:11px;color:var(--muted)}.report-filters select,.report-filters input{padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--paper);color:inherit}.report-summary{display:grid;grid-template-columns:1fr 2fr;gap:20px;margin-bottom:20px}.report-hero{background:#242a29;color:#fff;border-radius:18px;padding:28px;box-shadow:0 8px 24px #0000000b}.report-hero>span{display:flex;align-items:center;gap:9px;font-size:10px;letter-spacing:1.5px;color:#d9c498}.report-hero>strong{display:block;font-size:36px;letter-spacing:-1.5px;margin:18px 0 9px}.report-hero p{color:#b8c2be;font-size:12px}.report-hero>div{display:flex;justify-content:space-between;border-top:1px solid #ffffff22;padding-top:16px;margin-top:22px;font-size:12px}.report-method-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.report-method{border:1px solid var(--line);border-radius:18px;padding:24px;background:var(--paper);display:flex;flex-direction:column;justify-content:center}.report-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;margin-bottom:20px}.report-method>span{font-size:12px;color:var(--muted)}.report-method>strong{font-size:24px;margin:7px 0 10px;letter-spacing:-.7px}.report-method>small{font-size:11px;color:var(--muted)}.report-distribution{padding:24px;margin-bottom:24px}.report-distribution p{font-size:12px;color:var(--muted);margin-top:6px}.report-bar{display:flex;overflow:hidden;height:14px;border-radius:10px;background:var(--line);margin:23px 0 19px}.report-bar>div{transition:width .25s}.report-legend{display:flex;gap:28px;flex-wrap:wrap;font-size:12px}.report-legend span{display:flex;align-items:center;gap:8px}.report-legend i{width:8px;height:8px;border-radius:50%}.report-legend b{margin-left:5px}.report-count{padding:6px 10px;background:#bc8a4315;border-radius:8px;font-size:11px;color:var(--muted)}.report-table table{width:100%;border-collapse:collapse;font-size:12px}.report-table th{padding:14px 24px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);background:#88888808}.report-table td{padding:18px 24px;border-top:1px solid var(--line)}.report-table td small{display:block;color:var(--muted);font-size:10px;margin-top:5px}.report-pills{display:flex;gap:5px;flex-wrap:wrap}.report-pills span{background:#88888812;padding:5px 8px;border-radius:6px;font-size:10px}.report-empty{text-align:center;padding:55px 24px;color:var(--muted)}.report-empty svg{margin-bottom:15px}.report-empty p{margin-top:8px;font-size:12px}@media(max-width:1000px){.report-summary{grid-template-columns:1fr}.report-method>strong{font-size:22px}}@media(max-width:600px){.report-method-cards{grid-template-columns:1fr}.report-method{padding:18px}.report-hero>strong{font-size:30px}.report-legend{gap:15px}.report-table td,.report-table th{padding:14px}.report-filters{padding:15px}.report-filters>div{width:100%}}

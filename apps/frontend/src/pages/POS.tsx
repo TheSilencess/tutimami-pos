@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Search,
@@ -38,6 +39,9 @@ const emptyCustomer: CustomerForm = {
 };
 
 export default function POS() {
+  const [cashReady, setCashReady] = useState<boolean | null>(null);
+  const [cashError,setCashError] = useState('');
+  useEffect(()=>{api.get('/cash/current').then(r=>setCashReady(!!r.data)).catch(e=>setCashError(errorMessage(e)));},[]);
   const [products, setProducts] = useState<Product[]>([]);
   const [cats, setCats] = useState<Category[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -140,6 +144,7 @@ export default function POS() {
   };
 
   const finish = async () => {
+    if (!(await api.get('/cash/current').catch(()=>({data:null}))).data) {setCashReady(false);return;}
     if (!customer) {
       alert('Selecciona un cliente o crea uno nuevo antes de continuar.');
       return;
@@ -191,6 +196,9 @@ export default function POS() {
     }
   };
 
+  if(cashError)return <p>{cashError}</p>;
+  if(cashReady===null)return <Spinner/>;
+  if(!cashReady)return <section className="panel" style={{padding:24}}><h2>Apertura de caja requerida</h2><p>Ingresa el efectivo inicial para comenzar a vender.</p><Link to="/cash">Ir a aperturar caja</Link></section>;
   if (loading) return <Spinner />;
 
   return (

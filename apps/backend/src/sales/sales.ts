@@ -60,6 +60,9 @@ export class SalesController {
     if (!payments.length) throw new BadRequestException('Agrega al menos un método de pago');
 
     return this.p.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${u.id} FOR UPDATE`;
+      const session = await tx.cashSession.findFirst({where:{userId:u.id,closedAt:null}});
+      if (!session) throw new BadRequestException('Debes aperturar caja antes de vender');
       const customer = await tx.customer.findUnique({ where: { id: d.customerId } });
       if (!customer) throw new BadRequestException('Cliente no encontrado');
 
@@ -92,6 +95,7 @@ export class SalesController {
 
       const sale = await tx.sale.create({
         data: {
+          cashSessionId: session.id,
           customerId: d.customerId,
           userId: u.id,
           subtotal,
@@ -136,7 +140,12 @@ export class SalesController {
   @Permission('sales.cancel')
   async cancel(@Param('id') id: string, @CurrentUser() u: any) {
     return this.p.$transaction(async (tx) => {
-      const sale = await tx.sale.findUnique({ where: { id }, include: { items: true } });
+      const sale = await tx.sale.findUnique({ where: { id }, include: { items: true, cashSession: true } });
+      if (sale?.cashSessionId) {
+        await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${sale.userId} FOR UPDATE`;
+        const session = await tx.cashSession.findUnique({where:{id:sale.cashSessionId}});
+        if(session?.closedAt) throw new BadRequestException('No se puede cancelar una venta de una caja cerrada');
+      }
       if (!sale || sale.status === SaleStatus.CANCELLED) throw new BadRequestException('Venta no válida');
       for (const i of sale.items) {
         const p = await tx.product.findUnique({ where: { id: i.productId } });
