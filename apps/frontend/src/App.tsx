@@ -212,7 +212,7 @@ export default function App() {
         <Route
           path="/printing"
           element={
-            <PermissionRoute user={user!} permission="receipts.print">
+            <PermissionRoute user={user!} permission="receipts.reprint">
               <Printing />
             </PermissionRoute>
           }

@@ -45,7 +45,7 @@ export class CustomersController {
 
     return this.p.customer.create({
       data: {
-        customerType: d.customerType, name, nit,
+        customerType: d.customerType, name, nit,  
         phone: d.phone?.trim() || 'N/A',
         email: d.email?.trim() || 'N/A',
         address: d.address?.trim() || 'N/A',

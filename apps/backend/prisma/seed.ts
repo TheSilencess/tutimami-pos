@@ -127,6 +127,7 @@ async function main() {
     'sales.create',
     'payments.create',
     'receipts.print',
+  'receipts.reprint',
     'reports.view',
   ]);
 

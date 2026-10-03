@@ -48,7 +48,7 @@ const groups: {
     items: [
       ['/reports', 'Reportes', BarChart3, 'reports.view'],
       ['/users', 'Usuarios', ShieldCheck, 'users.view'],
-      ['/printing', 'Impresión', Printer, 'receipts.print'],
+      ['/printing', 'Reimpresión de recibos', Printer, 'receipts.reprint'],
       ['/audit', 'Auditoría', ShieldCheck, 'audit.view'],
       ['/settings', 'Configuración', Settings, 'settings.view'],
     ],
@@ -102,7 +102,7 @@ export function AppShell({
 
   // El cajero ve exclusivamente: Punto de venta, Productos y Reportes.
   // Admin conserva acceso completo independientemente de la lista de permisos.
-  const cashierNavigation = new Set(['/cash', '/sales/new', '/products', '/reports']);
+  const cashierNavigation = new Set(['/cash', '/sales/new', '/products', '/reports', '/printing']);
   const can = (path: string, permission: string) =>
     isAdmin ||
     (cashierNavigation.has(path) && permissions.includes(permission));

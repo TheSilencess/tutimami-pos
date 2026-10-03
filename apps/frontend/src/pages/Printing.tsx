@@ -13,14 +13,14 @@ function money(value: unknown) {
   return `Q ${Number(value || 0).toFixed(2)}`;
 }
 
-function openReceipt(payload: any) {
-  const printWindow = window.open('', '_blank', 'width=430,height=820');
+function openReceipt(payload: any, printWindow: Window) {
 
   if (!printWindow) {
     throw new Error('El navegador bloqueó la ventana de impresión. Permite las ventanas emergentes para TutiMami POS.');
   }
 
-  const payment = payload.payments?.[0];
+  const payments = payload.payments || [];
+  const received = payments.reduce((sum: number, p: any) => sum + Number(p.amount), 0);
   const paymentNames: Record<string, string> = {
     CASH: 'Efectivo',
     CARD: 'Tarjeta',
@@ -36,9 +36,8 @@ function openReceipt(payload: any) {
       <td style="padding:8px 0;text-align:right;vertical-align:top;font-weight:700">${money(item.total)}</td>
     </tr>`).join('');
 
-  const change = payment?.method === 'CASH'
-    ? Math.max(0, Number(payment.amount) - Number(payload.total))
-    : 0;
+  const change = Math.max(0, received - Number(payload.total));
+  const paymentsHtml = payments.map((p: any) => `<div style="display:flex;justify-content:space-between;margin:4px 0"><span>${esc(paymentNames[p.method] || p.method)}</span><strong>${money(p.amount)}</strong></div>${p.reference ? `<div><strong>Referencia:</strong> ${esc(p.reference)}</div>` : ''}`).join('');
 
   const html = `<!doctype html>
 <html>
@@ -89,10 +88,9 @@ body{margin:0;background:#fff;color:#171716;font-family:Arial,Helvetica,sans-ser
     <div class="total"><span>TOTAL</span><span>${money(payload.total)}</span></div>
   </div>
   <div class="payment">
-    <div><strong>Método:</strong> ${esc(paymentNames[payment?.method] || payment?.method || 'N/A')}</div>
-    <div><strong>Recibido:</strong> ${money(payment?.amount || payload.total)}</div>
-    ${payment?.method === 'CASH' ? `<div><strong>Cambio:</strong> ${money(change)}</div>` : ''}
-    ${payment?.reference ? `<div><strong>Referencia:</strong> ${esc(payment.reference)}</div>` : ''}
+    ${paymentsHtml}
+    <div style="border-top:1px solid #ddd;padding-top:5px;margin-top:6px"><strong>Recibido:</strong> ${money(received)}</div>
+    ${change > 0 ? `<div><strong>Cambio:</strong> ${money(change)}</div>` : ''}
   </div>
   <div class="thanks">¡Gracias por tu compra!</div>
   <div class="footer">Conserva este comprobante para cualquier consulta.<br>TutiMami POS</div>
@@ -121,12 +119,16 @@ export default function Printing() {
   }, []);
 
   const reprint = async (jobId: string) => {
+    const printWindow = window.open('', '_blank', 'width=430,height=820');
+    if (!printWindow) {alert('Permite las ventanas emergentes para reimprimir el recibo.');return;}
+    printWindow.document.write('<p>Preparando recibo...</p>');
     setReprinting(jobId);
     try {
       const response = await api.post(`/printing/jobs/${jobId}/reprint`, {});
-      openReceipt(response.data.payload);
+      openReceipt(response.data.payload, printWindow);
       await load();
     } catch (error) {
+      printWindow.close();
       alert(errorMessage(error));
     } finally {
       setReprinting(null);
@@ -138,7 +140,7 @@ export default function Printing() {
       <div className="page-head">
         <div>
           <span className="eyebrow">OPERACIONES</span>
-          <h1>Impresión</h1>
+          <h1>Reimpresión de recibos</h1>
           <p>Historial de recibos y reimpresiones.</p>
         </div>
         <Button variant="secondary" onClick={() => load()}>
